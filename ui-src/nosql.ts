@@ -97,3 +97,4 @@ class Database {
 	public collection(colName: string): Collection {
 	} 	
 }
+
