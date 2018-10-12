@@ -1,8 +1,8 @@
-# Minimal noSQL database in holochain DHT
+#Minimal noSQL database in holochain DHT
 
 Planned, under work, currently does not work.
 
-## Overview
+##Overview
 
 MVC_aspp  --  holo_nosql_interface  ---AJAX---  holo_nosql DNA app
 
