@@ -22,7 +22,7 @@ var db = new Database(userName, psw);
 		col.delDocument(doc, callBackFun);
 		col.empty(callBackFun);
 		var cursor = col.find(propName, propvalue);
-		cursor.next(callbackFun);
+			cursor.next(callbackFun);
 		
 ```
 ## Licence

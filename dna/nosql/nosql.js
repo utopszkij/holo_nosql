@@ -389,7 +389,9 @@ var DocumentHandler = /** @class */ (function () {
             return;
         }
         debug('\n_insert 5');
-        key = commit('publicStr', JSON.stringify(entry));
+        var s = JSON.stringify(entry);
+        debug('\n_insert 5.1 ' + s);
+        key = commit('publicStr', s);
         debug('\n_insert 6');
         if (key instanceof Error) {
             this.err = 'COMMIT_ERROR';
