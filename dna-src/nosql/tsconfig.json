@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "outDir": "../../dna/nosql",
+    "rootDir": ".",
+    "typeRoots": ["../../@types"],
+    "newLine" : "lf"
+  }
+}

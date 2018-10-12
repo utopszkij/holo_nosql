@@ -1,0 +1,74 @@
+{
+    "Version": 1,
+    "UUID": "df1c0cd6-76f1-11e8-a54a-0242ac110002",
+    "Name": "holo_nosql",
+    "Properties": {
+        "description": "minimal noSQL database in holochain DHT",
+        "language": "en"
+    },
+    "RequiresVersion": 26,
+    "DHTConfig": {
+        "HashType": "sha2-256",
+        "RedundancyFactor": 0
+    },
+    "Progenitor": {
+        "Identity": "",
+        "PubKey": null
+    },
+    "Zomes": [
+        {
+            "Name": "nosql",
+            "Description": "minimal noSQL database",
+            "CodeFile": "nosql.js",
+            "RibosomeType": "js",
+            "BridgeFuncs": [],
+            "Config": null,
+            "Entries": [
+              {
+                  "Name": "publicLink",
+                  "DataFormat": "links",
+                  "Exposure": "public",
+                  "Sharing": "public"
+              },
+              {
+                  "Name": "publicStr",
+                  "DataFormat": "string",
+                  "Exposure": "public",
+                  "Sharing": "public"
+              }
+            ],
+            "Functions": [
+                {"Name": "addDocument",
+                 "CallingType": "string",
+					  "Exposure": "public",
+                 "Sharing": "public"
+                },
+                {"Name": "delDocument",
+                 "CallingType": "string",
+					  "Exposure": "public",
+					  "Sharing": "public"
+                },
+                {"Name": "updateDocument",
+                 "CallingType": "string",
+					  "Exposure": "public",
+					  "Sharing": "public"
+                },
+                {"Name": "doFind",
+                 "CallingType": "string",
+					  "Exposure": "public",
+					  "Sharing": "public"
+                },
+                {"Name": "doNext",
+                 "CallingType": "json",
+					  "Exposure": "public",
+					  "Sharing": "public"
+                },
+                {"Name": "doEmpty",
+                 "CallingType": "json",
+					  "Exposure": "public",
+					  "Sharing": "public"
+                }            
+             ]
+        }
+    ]
+}
