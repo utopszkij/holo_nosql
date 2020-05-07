@@ -36,10 +36,10 @@ php, phpunit, holonix
 
 ## overview
 
-![](https://github.com/utopszkij/holo_nosql/doc/holodb-koncepcio.png) 
+![](https://github.com/utopszkij/holo_nosql/blob/master/doc/holodb-koncepcio.png) 
 
 
-![](https://github.com/utopszkij/holo_nosql/doc/holodb-sw.png) 
+![](https://github.com/utopszkij/holo_nosql/blob/master/doc/holodb-sw.png) 
 
 ## Licence
 GNU/GPL
