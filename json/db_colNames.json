@@ -1,0 +1,38 @@
+[
+    {
+        "parent": "",
+        "id": "0",
+        "key": "0",
+        "value": "col1",
+        "deleted": true,
+        "left": "",
+        "right": "1"
+    },
+    {
+        "parent": "0",
+        "id": "1",
+        "key": "1",
+        "value": "col2",
+        "deleted": true,
+        "left": "",
+        "right": "2"
+    },
+    {
+        "parent": "1",
+        "id": "2",
+        "key": "2",
+        "value": "col3",
+        "deleted": true,
+        "left": "",
+        "right": "3"
+    },
+    {
+        "parent": "2",
+        "id": "3",
+        "key": "3",
+        "value": "col3",
+        "deleted": true,
+        "left": "",
+        "right": ""
+    }
+]

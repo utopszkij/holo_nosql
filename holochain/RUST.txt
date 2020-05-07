@@ -1,0 +1,135 @@
+RUST programnyelv
+=================
+
+Szokásos kommentek  // és /*...*/
+
+változó, function, konstans nevek csak kisbetük, számok _
+struktura nevekben lehetnek nagybetük is
+
+use .........    külső fájlok linkelése
+
+Tipusok
+	i32, 164, u32, u64, usize, String,  Vec<tipus>,  struktúra nevek
+
+logikai operátorok:   &&  ||
+
+Vektor  (tömb))
+	tömbnév = vec!<érték, érték, ....>;
+	hossz = tömbnév.len()
+	tömbnév.push(érték);
+	változónév = tömbnév[num];
+
+struktóra definició
+	struct Sructnév {
+		fieldnév1: tipus,
+		fieldnév2: tipus,	   // az utolsó után is kell vessző
+		...
+	}
+
+	let filednév1 = érték;
+	let filednév2 = érték;
+	strnév = Structznév { fieldnév1, fieldnév2};
+
+	vagy:
+
+	strnév = Structznév { filednév1: érték, fieldnév2:érték, ....};
+
+	név =	strnév.fieldnév1
+
+alternativ szerkezetü struktúra
+	enum EnumNév {
+		structnév1: tipus,
+		....
+		structnév2: tipus,   // az utolsó után is kell vessző
+	}
+
+enumerátor konstans definiálása
+	enum Enumnév {
+		VALUE1,
+		VALUE2, ...
+	}
+
+
+alternativ struktúra használata
+
+	match enumvarnév {
+		Structnév1 { filed1, field2, ..} => {  // a , .. akkor kell ha nem akarjuk az összes fieldet használni
+			field1, field2 használható
+		},
+		Structnév2 { filed1, field2, ..} => {
+
+		},
+		_ => {
+			ez a kód fut ha nem egyezett a felsorolt strukturák egyikével sem
+		}
+	}
+
+Konstans létrehozása
+	let név:tipus = érték;
+	let név = érték;   // auto tipus érték alapján
+	let név = "xxxxx";  // stringre mutató referencia nem pedig Strint !!!!!
+	let név = Enumnév::VALUE1
+
+változó létehozása
+	let mut név:tipus = érték;
+	let mut név = érték;   // auto tipus érték alapján
+	let mut név = "xxxxx";  // stringre mutató referencia nem pedig Strint !!!!!
+
+érték át mozgatás
+	név1 = név2;  // innentől kezdve név3 nem használható
+	strváltozó = "....".into();
+	strváltozó = számVáltozó.to_string();
+	numváltozónév = stringvar.parse().unwrap();
+
+érték átmásolása
+	név1 = név2.clone();  // név2 továbbra is használható
+
+	név1 = &név2;   // név2 továbbra is használható
+
+function definició a "pub" elhagyható, a pub funkciók http -ből is hivhatóak
+	pub fn funnév(parnév: tipus, parnév: &tipus.....) -> tipus {...}
+
+	return nincs, helyette egy olyan utasitás aminak a végén nincs ; és az előírt tipust adja eredményül
+
+Ha egy paraméter kompatibilitási okból kell, de nincs használva akkor
+_név: tipus kell a paraméter listába
+
+if feltétel {  } else {  }  // a feltétel köré nem kell külső zárójel
+if feltétel {  }
+
+iteráció
+
+for név in min..max {
+   név numerikus változó használható
+}
+
+iteráció egy vektoron:
+
+for item in &vecnév {
+   item változó használható
+}
+
+holochain specialitás function result: ZomeApiResult<tipus>
+
+	sikeres return
+		Ok(tipus)      // Nincs a végén ;
+	hibaerror
+		Err(ZomeApiError::Internal(
+            "get_links did not return an app entry".to_string())  // nincs a végén ;
+
+
+	az ilyen funciók hivásánál ? kell a hivás végén, ez hibaüzenetes return-t generál
+	de csak ha a hívó is ilyen return értéket adó funkció.
+
+	fn fun1(a: u32) -> ZomeApiReturn<u32> {
+		Ok(a)
+	}
+
+	fn fun2(b: String) -> ZomeApiReturn<String> {
+		let i = fun1(5)?;  // ha fun1 -ben hiba léett fel akkor hibareturn -al kilép a fun2.
+		Ok("".into())
+	}
+
+
+	A funciók és struktúra definiók mindegyike fölött kell e #[zome ....] sor.
+

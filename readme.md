@@ -1,30 +1,46 @@
-# Minimal noSQL database in holochain DHT
-
-Planned, under work, currently does not work.
+# Minimal noSQL database data store in holochain DHT
 
 ## Overview
 
-MVC_aspp  --  holo_nosql_interface  ---AJAX---  holo_nosql DNA app
+ holo_nosql_interface  for PHP 
+ 
+## Version
+ 
+ Aplha 1.0  not stabile
+ 
+## Language
+ 
+ PHP, holochain RUST
 
 ## Request softwares
 
-TypeScript, JavaScript, holochain-proto
+php, phpunit, holonix
+-  https://github.com/holochain/holonix
+-  php 7.4.5
+- phpunit 6.5.5
 
-## Planned holo_nosql_interface
-```
-var db = new Database(userName, psw);
-	db.createCollection(colName, indexes, validator, accessRights, callbackFun);
-	db.updateCollection(colName, indexes, validator, accessRights, callbackFun);
-	db.dropCollection(colName, callbackFun);
-	var col = db.collection(colName);
-		col.addDocument(doc, accessRights, callbackFun);
-		col.updateDocument(doc,accessRights, callbackFun);
-		col.delDocument(doc, callBackFun);
-		col.empty(callBackFun);
-		var cursor = col.find(propName, propvalue);
-			cursor.next(callbackFun);
-		
-```
+## Properties 
+
+- CRUD funcions (create,read,update,delete)
+- Collection / Document data structure
+- create collection, defined indexes
+- drop collection
+- get collection by name
+- indexing to a field by defined in "create collection"
+- add document into one exists collection
+- update existng document
+- delete existing docuemnt
+- find document in collection by indexed field
+- read documents set from one collection by indexed field, use pagination and ASC/DESC ordering
+- create index, drop index into existing collections
+
+## overview
+
+![](https://github.com/utopszkij/holo_nosql/doc/holodb-koncepcio.png) 
+
+
+![](https://github.com/utopszkij/holo_nosql/doc/holodb-sw.png) 
+
 ## Licence
 GNU/GPL
 

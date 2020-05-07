@@ -1,0 +1,38 @@
+[
+    {
+        "parent": "",
+        "id": "0",
+        "key": "4",
+        "value": "4",
+        "deleted": false,
+        "left": "",
+        "right": "1"
+    },
+    {
+        "parent": "0",
+        "id": "1",
+        "key": "5",
+        "value": "5",
+        "deleted": false,
+        "left": "",
+        "right": "2"
+    },
+    {
+        "parent": "1",
+        "id": "2",
+        "key": "6",
+        "value": "6",
+        "deleted": false,
+        "left": "",
+        "right": "3"
+    },
+    {
+        "parent": "2",
+        "id": "3",
+        "key": "7",
+        "value": "7",
+        "deleted": false,
+        "left": "",
+        "right": ""
+    }
+]

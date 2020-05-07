@@ -1,0 +1,93 @@
+[
+    {
+        "indexes": [
+            "id",
+            "field1",
+            "field2"
+        ],
+        "indexRoots": [
+            "0",
+            "0",
+            "0"
+        ],
+        "id": "0",
+        "ty": "del",
+        "colName": "col1"
+    },
+    {
+        "indexes": [
+            "id",
+            "f1",
+            "f2"
+        ],
+        "indexRoots": [
+            "0",
+            "0",
+            "0"
+        ],
+        "id": "1",
+        "ty": "del",
+        "colName": "col2"
+    },
+    {
+        "indexes": [
+            "id",
+            "f1",
+            "f2"
+        ],
+        "indexRoots": [
+            "0",
+            "0",
+            "0"
+        ],
+        "id": "2",
+        "ty": "del",
+        "colName": "col3"
+    },
+    {
+        "indexes": [
+            "id",
+            "f1",
+            "f2"
+        ],
+        "indexRoots": [
+            "0",
+            "0",
+            "0"
+        ],
+        "id": "3",
+        "ty": "del",
+        "colName": "col3"
+    },
+    {
+        "id": "4",
+        "ty": "doc",
+        "colName": "col1",
+        "field1": "01",
+        "field2": "02",
+        "field3": "03"
+    },
+    {
+        "id": "5",
+        "ty": "doc",
+        "colName": "col1",
+        "field1": "11",
+        "field2": "12",
+        "field3": "13"
+    },
+    {
+        "id": "6",
+        "ty": "doc",
+        "colName": "col1",
+        "field1": "21",
+        "field2": "22",
+        "field3": "23"
+    },
+    {
+        "id": "7",
+        "ty": "doc",
+        "colName": "col1",
+        "field1": "31",
+        "field3": "33"
+    }
+]
