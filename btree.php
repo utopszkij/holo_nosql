@@ -23,13 +23,17 @@ class BtreeItem {
 	public $right = ''; 
 }
 
+class KeyStorage {
+    
+}
+
 /**
 * BtreeItem storage class
 * request 
 *     BtreeItem class
 *     JSONPATH constant
 */
-class JsonKeyStorage {
+class JsonKeyStorage extends KeyStorage {
 	private $items = array();
 	private $name = 'btree.json';		
 		
@@ -80,8 +84,8 @@ class JsonKeyStorage {
 	* @param string $right
 	*/
 	public function setRight(BtreeItem $item, string $right) {
-		$item->right = $right;	
-		$this->update($item);	
+	    $item->right = $right;
+	    $this->update($item);
 	}
 
 	/**
@@ -90,8 +94,8 @@ class JsonKeyStorage {
 	* @param string $left
 	*/
 	public function setLeft(BtreeItem $item, string $left) {
-		$item->left = $left;	
-		$this->update($item);	
+	   $item->left = $left;
+	   $this->update($item);
 	}
 
 	/**
@@ -243,28 +247,29 @@ class Btree {
 			// this is root item
 			$newId = $this->storage->add($item);
 		} else {
-			$w = $this->storage->getRoot();
+		    if ($this->rootId == '') {
+		        $this->rootId = $this->storage->getRoot();
+		    }
+			$w = $this->storage->get($this->rootId);
 			$end = false;
 			while (!$end) {
 				if ($value >= $w->value) {
-					if ($w->right > 0) {
+					if ($w->right != '') {
 						$w = $this->storage->get($w->right);
 					} else {
 						// insert w.right
 						$item->parent = $w->id;
 						$newId = $this->storage->add($item);
-						$w->right = $newId;
 						$this->storage->setRight($w, $newId);
 						$end = true;
 					}
 				} else {
-					if ($w->left > 0) {
+					if ($w->left != '') {
 						$w = $this->storage->get($w->left);
 					} else {
 						// insert left
 						$item->parent = $w->id;
 						$newId = $this->storage->add($item);
-						$w->left = $newId;
 						$this->storage->setLeft($w, $newId);
 						$end = true;
 					}
@@ -285,14 +290,17 @@ class Btree {
 		if ($this->storage->isEmpty()) {
 			return $result;
 		} else {
-			$w = $this->storage->getRoot();
+		    if ($this->rootId == '') {
+		       $this->rootId = $this->storage->getRoot();
+		    }
+			$w = $this->storage->get($this->rootId);
 			$end = false;
 			while (!$end) {
 				if ($w->value == $value) {
 						$result = $w;						
 						$end = true;						
 				} else if ($value > $w->value) {
-					if ($w->right > 0) {
+					if ($w->right != '') {
 						$w = $this->storage->get($w->right);
 					} else {
 						if ($w->value == $value) {
@@ -301,7 +309,7 @@ class Btree {
 						$end = true;						
 					}
 				} else {
-					if ($w->left > 0) {
+					if ($w->left != '') {
 						$w = $this->storage->get($w->left);
 					} else {
 						if ($w->value == $value) {
@@ -312,7 +320,7 @@ class Btree {
 				}			
 			} // while
 			if ($result->deleted) {
-				$result = $this->next($result);			
+			    $result = $this->next($result);			
 			}
 			if ($result->value != $value) {
 				$result = new BtreeItem();	
@@ -327,7 +335,6 @@ class Btree {
 	* @param BtreeItem
 	*/
 	public function delete($item) {
-		$item->deleted = true;
 		$this->storage->delete($item);
 	}
 	
@@ -343,9 +350,12 @@ class Btree {
 			if ($root) {
 				$w = $root;
 			} else {
-				$w = $this->storage->getRoot();
+			    if ($this->rootId == '') {
+			        $this->rootId = $this->storage->getRoot();
+			    }
+			    $w = $this->storage->get($this->rootId);
 			}	
-			while ($w->left > 0) {
+			while ($w->left != '') {
 				$w = $this->storage->get($w->left);			
 			}
 			$result = $w;
@@ -368,9 +378,12 @@ class Btree {
 			if ($root) {
 				$w = $root;
 			} else {
-				$w = $this->storage->getRoot();
+			    if ($this->rootId == '') {
+			        $this->rootId = $this->storage->getRoot();
+			    }
+			    $w = $this->storage->get($this->rootId);
 			}	
-			while ($w->right > 0) {
+			while ($w->right != '') {
 				$w = $this->storage->get($w->right);			
 			}
 			$result = $w;
@@ -392,7 +405,7 @@ class Btree {
 		$result->deleted = true;
 		$startId = $item->id;
 		$end = false;
-		if ($item->right > 0) {
+		if ($item->right != '') {
 			$item = $this->storage->get($item->right);
 			$result = $this->first($item);
 		} else {
@@ -427,7 +440,7 @@ class Btree {
 		$result->deleted = true;
 		$startId = $item->id;
 		$end = false;
-		if ($item->left > 0) {
+		if ($item->left != '') {
 			$item = $this->storage->get($item->left);
 			$result = $this->last($item);
 		} else {
@@ -478,7 +491,7 @@ class Btree {
 	 * @return string
 	 */
 	public function getErrorMsg(): string {
-	    return $this->errorMsg();
+	    return $this->errorMsg;
 	}
 	
 	/**

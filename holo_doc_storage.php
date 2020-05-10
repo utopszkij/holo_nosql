@@ -1,18 +1,20 @@
 <?php
 
 /**
-* Btree storage in holochain DHT
+* Document storage in holochain DHT
 *
 * requested constants: HOLOPSW, HOLOURL, HOLOINSTANCE
 *
-* DHT-structure:
-* 
-* root_btree_item  {key:"btree-root", value:"btreeName", parent:"", leftId:"", rightId:"", deleted:true}
-*         +---link_lrdu---tag='del'
+* logical DHT-structure:
+* ----------------------
+* btree_item  {key:"btree-root", value:"btreeName", parent:"", leftId:"", rightId:"", deleted:true}
+*         +---link_lrdu---tag='D'
 *         +---link_psw----tag='xxxxx'   target=self   only one 
 *         +---link_lock---tag='dblock' target=self    only one 
-*       a root_btree colName alapján collection tipusú item rekordokra mutat
-*       vany egy "transactions_log" collection ami indexelve van a starttime -re is
+* collection_item   {ty, colName, indexes, indexRoots}   
+*         +---link_lrdu---tag='D'|'U'   if tag=='U' then target=actual dcollection' address 
+* document_item     {ty, colName, .....} 
+*         +---link_lrdu---tag='D'|'U'   if tag=='U' then target=actual document' address 
 *       
 * DHT definition
 * --------------
@@ -33,25 +35,24 @@
 *
 * Logical database shema
 * ----------------
-*   root_item
+*   root_btree
 *       +--(col_name)-------> collection
 *                              |      |
-*                           btree1   btree2
-*                                     +----(value)---> document
-*
-* Logical rekords  (all type store in "Item")
+*                          btree_f1  btree_f2
+*                              |       +----(value)---> document
+*                              +------------(value)---> document
+*                              
+* Logical rekords  (all type store in DHT by "Item")
 * ----------------
 * btreeItem  {parent, key, value) 
 * collection {name, indexNames, indexRoots}  
 * document   {colName, data} 
 */
-class HoloBtreeStorage {
-	public $name = 'btree';
+class HoloDocStorage extends DocStorage {
 	public $rootId = '';
 	private $errorMsg = '';
 		
-	function __construct(string $name) {
-	    $this->name = $name;
+	function __construct() {
 	    $this->rootId = '';
 	    $this->errorMsg = '';
 	}	
@@ -104,90 +105,69 @@ class HoloBtreeStorage {
 		
 		
 	/**
-	* read item from storage
+	* read document from storage
 	* @param string $id
-	* @return BtreeItem if not found id=''
+	* @return Document if not found id=''
 	*/	
-	public function get(string $id): BtreeItem  {
+	public function read(string $id): Document  {
 	    $this->errorMsg = '';
 	    // Entry olvasás a DHT -ből
-		$result = new BtreeItem();
-		$result->deleted = false;
+		$result = new Document();
 		$res = $this->dna_call('get_item', ["id" => $id]);
 		if (isset($res->Ok)) {
-		  $encrypted = $res->Ok->App[1];
-		  
-		  /*
+		    $encrypted = JSON_decode($res->Ok->App[1])->datastr;
 		  if (substr($encrypted,0,1) != '{') {
+		      // nem értem miért:
+		      $encrypted = str_replace(' ','+',$encrypted);
 		      $decryption_iv = '1201586891011121';
 		      $dataStr = openssl_decrypt ($encrypted, "AES-128-CTR", HOLOPSW, 0, $decryption_iv);
 		  } else {
 		      $dataStr = $encrypted;
 		  }
-		  */
-		  $dataStr = $encrypted;
-		  
-		  $item1 = JSON_decode($dataStr);
-		  $item = JSON_decode($item1->datastr);
-		  foreach ($item as $fn => $fv) {
+		  $item = JSON_decode($dataStr);
+	      foreach ($item as $fn => $fv) {
 	          $result->$fn = $fv;
 	      }
 	      $result->id = $id;
-	      $result->deleted = false;
 	      $res = $this->dna_call('get_lrdu',["base" => $id]);
 	      if (isset($res->Ok)) {
 	          $links = $res->Ok->links;
 	          foreach ($links as $link)  {
-	              if ($link->tag == 'L') {
-	                  $result->left = $link->address;
-	              }
-	              if ($link->tag == 'R') {
-	                  $result->right = $link->address;
-	              }
 	              if ($link->tag == 'D') {
-                        $result->deleted = true;	                  
+                        $result = new Document();
+                        $this->errorMsg = 'not_found';
 	              }
 	              if ($link->tag == 'U') {
-	                  $res = $this->dna_call('get_item', ["id" => $link->address]);
-	                  if (isset($res->Ok)) {
-	                      $item = JSON_decode($res->ok->App['item']);
-	                      foreach ($item as $fn => $fv) {
-	                          $result->$fn = $fv;
-	                      }
-	                  } else {
-	                      $this->errorMsg = JSON_encode($res);
-	                  }
+	                  $result = $this->read($link->address);
+	                  $result->id = $id;
 	              }
 	          } // foreach links
 	      } else {
+	          $result = new Document();
 	          $this->errorMsg = JSON_encode($res);
-	          $result->deleted = true;
 	      } // succes link_lrdu read
 		} else {
+		    $result = new Document();
 		    $this->errorMsg = 'not_found';
-		    $result->deleted = true;
 		} // succes item read
-	    return $result;
+		return $result;
 	}	
 
 	/**
-	* storage new item into storage
-	* @param BtreeItem item
+	* storage new Document into storage
+	* @param Document
 	* @return string  new id
 	*/
-	public function add(BtreeItem $item): string {
+	public function add(Document $item): string {
 	    $this->errorMsg = '';
 	    // Item kialakitása
-		$dhtItem = new stdClass();
-		$dhtItem->key = $item->key;
-		$dhtItem->value = $item->value;
-		$dhtItem->parent = $item->parent;
+	    $dhtItem = new stdClass();
+		foreach ($item as $fn => $fv) {
+		    $dhtItem->$fn = $fv;
+		}
 		$s = JSON_encode($dhtItem);
-		
 		$encryption_iv = '1201586891011121';
-		// $encrypted = openssl_encrypt($s, "AES-128-CTR", HOLOPSW, 0, $encryption_iv);
-		$encrypted = $s;
-		
+		$encrypted = openssl_encrypt($s, "AES-128-CTR", HOLOPSW, 0, $encryption_iv);
 		// item kitárolása 
 		$res = $this->dna_call('add_item',["pdatastr" => $encrypted]); 
 		if (isset($res->Ok)) {
@@ -212,74 +192,52 @@ class HoloBtreeStorage {
 	}
 
 	/**
-	* delete one item
-	* @param BtreeItem $item
-	*/
-	public function delete(BtreeItem $item): bool {
+	 * delete one Document
+	 * @param BtreeItem $item
+	 */
+	public function remove(Document $item): bool {
 	    $this->errorMsg = '';
-	    if ($item->deleted) {
+	    // link_lrd felvitele 'tag'='del' target=$item->id
+	    $res = $this->dna_call('add_lrdu',["base" => $item->id, "target" => $item->id, "tag" => "D"]);
+	    if (isset($res->Ok)) {
+	        return true;
+	    } else {
+	        $this->errorMsg = JSON_encode($res);
 	        return false;
 	    }
-	    // link_lrd felvitele 'tag'='del' target=$item->id
-	    $res = $this->dna_call('add_lrdu',["base" => $item->id, "target" => $item->key, "tag" => "D"]);
-		if (isset($res->Ok)) {
-		    return true;
-		} else {
-		    $this->errorMsg = JSON_encode($res);
-		    return false;
-		}
 	}
 	
 	/**
-	* set right in item
-	* @param BtreeItem $item
-	* @param string $right
-	*/
-	public function setRight(BtreeItem $item, string $right): bool {
+	 * update one Document
+	 * @param BtreeItem $item
+	 */
+	public function update(Document $oldDocument, Document $newDocument): bool {
 	    $this->errorMsg = '';
-	    if ($item->right != '') {
-	        $this->errorMsg = 'right_exists';
-	        return false;
-	    }
-	    // link_lrd felvitele 'tag'='R' target=$right
-	    $res = $this->dna_call('add_lrdu',["base" =>  $item->id, "target" => $right, "tag" => "R"]);
-	    if (isset($res->Ok)) {
-	        return true;
+	    $result = true;
+	    $res = $this->read($oldDocument->id);
+	    if ($res->id == '') {
+	        $result = false;
+	        $this->errorMsg = 'not_found';
 	    } else {
-	        $this->errorMsg = JSON_encode($res);
-	        return false;
+    	    $address = $this->add($newDocument);
+    	    //del  exists link_lrdu
+    	    $res1 = $this->dna_call('get_lrdu',["base" => $oldDocument->id]);
+    	    if (isset($res1->Ok)) {
+    	        $links = $res1->Ok->links;
+    	        foreach ($links as $link) {
+    	            $res2 = $this->dna_call('del_lrdu',
+    	                ["base" => $oldDocument->id, "target" => $link->address, "tag" => $link->tag]);
+    	            if (!isset($res2->Ok)) {
+    	                $this->errorMsg = JSON_encode($res);
+    	            }
+    	        }
+    	    }
+    	    // add new link_lrdu 
+    	    $res = $this->dna_call('add_lrdu',["base" => $oldDocument->id, "target" => $address, "tag" => "U"]);
 	    }
+	    return $result;
 	}
-
-	/**
-	* set left in item
-	* @param BtreeItem $item
-	* @param string $left
-	*/
-	public function setLeft(BtreeItem $item, string $left): bool {
-	    $this->errorMsg = '';
-	    if ($item->left != '') {
-	        $this->errorMsg = 'left_exists';
-	        return false;
-	    }
-	    // link_lrd felvitele 'tag'='L' target=$right
-	    $res = $this->dna_call('add_lrdu', ["base" => $item->id, "target" => $left, "tag" => 'L']);
-	    if (isset($res->Ok)) {
-	        return true;
-	    } else {
-	        $this->errorMsg = JSON_encode($res);
-	        return false;
-	    }
-	}
-
-	/**
-	* btree empty?
-	* @return bool
-	*/
-	public function isEmpty(): bool {
-	    $this->errorMsg = '';
-	    return false;	
-	}	
+	
 	
 	/**
 	* get root item 
@@ -295,33 +253,6 @@ class HoloBtreeStorage {
 	    }
 	}
 	
-	/**
-	* delete all items
-	*/
-	public function clear() {
-	    // not implemented
-	}
-	
-	public function init(): string {
-	    $this->errorMsg = '';
-	    if ($this->name == 'db_colNames') {
-	        $res = $this->dna_call('get_root',[]);
-	        if ($res->Ok) {
-	            $this->rootId = $res->Ok;
-	        }
-	        $this->setPsw(HOLOPSW);
-	    } else {
-    	    // create root btree item into DHT
-    	    $item = new BtreeItem();
-    	    $item->value = $this->name.'-btree-root';
-    	    $this->rootId = $this->add($item);
-            $res = $this->dna_call('add_lrdu', ["base" => $this->rootId, "target" => $this->rootId, "tag" => 'D']);
-    	    if (!isset($res->Ok)) {
-    	        $this->errorMsg = JSON_encode($res);
-    	    }
-	    }
-	    return $this->rootId;
-	}
 
 	/**
 	* dump items to json string
@@ -355,13 +286,9 @@ class HoloBtreeStorage {
 	        $this->errorMsg = JSON_encode($res);
 	        return false;
 	    } else {
-	        $res = $this->dna_call('get_root',[]);
-	        if ($res->Ok) {
-	            $this->rootId = $res->Ok;
-	        }
-	        return true;
+	        $res->rootId = $res;
+	        return $res->Ok;
 	    }
-	    
 	}
 	
 	/**

@@ -27,7 +27,11 @@
  *  if defined KEY_CLASS_NAME use it else use Btree
  */
  
-class JsonDocStorage {
+class DocStorage {
+    
+}
+
+class JsonDocStorage extends DocStorage {
     private $docs = [];
     
     function __destruct() {
@@ -77,7 +81,7 @@ class KeyRec {
 
 class Collection {
    public $db = false;
-	public $id = 0;
+	public $id = '';
 	public $name = '';
 	public $indexes = [];  // array of Key processing object  
 	private $errorMsg = '';
@@ -89,7 +93,7 @@ class Collection {
 	 * @param string $name collection name
 	 * @param array $indexes array of string fieldNames. must include 'id' !
 	 * @param array $indexRoots array of string index tree root points
-	 * @param DocStorage $docStorage  data stroca ovject
+	 * @param JsonDocStorage|HoloDocStorage  $docStorage  data stroca ovject
 	 * @param string $keyClassName  Key storage class name
 	 */
 	function __construct(string $name, 
@@ -151,18 +155,33 @@ class Collection {
 		foreach ($this->indexes as $index) {
 		    $fieldName = $index->fieldName;
 		    if (isset($oldDocument->$fieldName)) {
-		        $item = $index->find($oldDocument->$fieldName);
-		        while ((!$item->deleted) & 
-		               ($item->value == $oldDocument->$fieldName) &
-		            ($item->key != $oldDocument->id)) {
-		            $item = $index->next();          
-		        }
-		        if (!$item->deleted) {
-		          $index->delete($item);
-		        }
+		        $oldValue = $oldDocument->$fieldName;
+		    } else {
+		        $oldValue = 'vhhrtzvbbbuztn876';
 		    }
 		    if (isset($newdDocument->$fieldName)) {
-		        $index->insert($newDocument->id, $newDocument->$fieldname);
+		        $newValue = $oldDocument->$fieldName;
+		    } else {
+		        $newValue = 'vhurewdbv77856bnoi';
+		    }
+		    // need to be modified?
+		    if (($oldValue != $newValue) | ($oldDocument->id != $newDocument->id)) {
+		        // delete old index
+		        if (isset($oldDocument->$fieldName)) {
+		            $item = $index->find($oldDocument->$fieldName);
+    		        while ((!$item->deleted) & 
+    		               ($item->value == $oldDocument->$fieldName) &
+    		            ($item->key != $oldDocument->id)) {
+    		            $item = $index->next();          
+    		        }
+    		        if (!$item->deleted) {
+    		          $index->delete($item);
+    		        }
+    		    }
+    		    // create new index
+	   	        if (isset($newdDocument->$fieldName)) {
+		          $index->insert($newDocument->id, $newDocument->$fieldname);
+		        }
 		    }
 		}
 		return ($this->errorMsg == '');
@@ -270,8 +289,11 @@ class Collection {
                    $item = $index->first();
                    while ((!$item->deleted) & (($j < $limit) | $limit == 0)) {
                        if ($i >= $offset) {
-                           $result[] = $this->docStorage->read($item->key);
-                           $j++;
+                           $res = $this->docStorage->read($item->key);
+                           if ($res->ty == 'doc') {
+                             $result[] = $res;
+                             $j++;
+                           }
                        }
                        $item = $index->next($item);
                        $i++;
@@ -282,8 +304,11 @@ class Collection {
                    $item = $index->last();
                    while ((!$item->deleted) & ($j < $limit)) {
                        if ($i >= $offset) {
-                           $result[] = $this->docStorage->read($item->key);
-                           $j++;
+                           $res = $this->docStorage->read($item->key);
+                           if ($res->ty == 'doc') {
+                               $result[] = $res;
+                               $j++;
+                           }
                        }
                        $item = $index->previos($item);
                        $i++;
@@ -320,8 +345,11 @@ class Collection {
 	                while ((!$item->deleted) & (($j < $limit) | ($limit == 0))) {
 	                    if ($item->value == $value) {
 	                       if ($i >= $offset) {
-	                           $result[] = $this->docStorage->read($item->key);
-	                           $j++;
+	                           $res = $this->docStorage->read($item->key);
+	                           if ($res->ty == 'doc') {
+	                               $result[] = $res;
+	                               $j++;
+	                           }
 	                       }
 	                       $i++;
 	                    }
@@ -334,8 +362,11 @@ class Collection {
 	                while ((!$item->deleted) & ($j < $limit)) {
 	                    if ($item->value == $value) {
 	                       if ($i >= $offset) {
-	                            $result[] = $this->docStorage->read($item->key);
-	                           $j++;
+	                            $res = $this->docStorage->read($item->key);
+	                            if ($res->ty == 'doc') {
+    	                            $result[] = $res;
+	                                $j++;
+	                            }
 	                       }
 	                       $i++;
 	                    }
@@ -395,7 +426,9 @@ class Collection {
 		while ($offset < $count) {
 			$documents = $this->readDocuments('id', 'ASC', $offset, 100);
 			foreach ($documents as $document) {
-			    $index->insert($document->id, $document->$fieldName);
+			    if (isset($document->$fieldName)) {
+			     $index->insert($document->id, $document->$fieldName);
+			    }
 			}
 			$offset = $offset + 100;
 		}
@@ -503,18 +536,19 @@ class Db {
 	 */
 	function __construct(string $colNamesRoot = '0') {
 	    if (defined('DOC_STORAGE_NEME')) {
-	        $docStorageName = DOC_STORAGE_NAME;
+	        $docStorageName = DOC_STORAGE_NEME;
 	    } else {
-	        $docStoragename = 'JsonDocStorage';
+	        $docStorageName = 'JsonDocStorage';
 	    }
 	    if (defined('KEY_CLASS_NEME')) {
 	        $this->keyClassName = KEY_CLASS_NAME;
 	    } else {
-	        $this->keyClassName = 'Btreee';
+	        $this->keyClassName = 'Btree';
 	    }
-	   $this->docStorage = new $docStorageName();
+	    $keyClassName = $this->keyClassName;
+	   $this->docStorage = new $docStorageName ();
 	   $this->errorMsg = '';
-	   $this->colNamesIndex = new $keyClassName('db','colNames');
+	   $this->colNamesIndex = new $keyClassName ('db','colNames');
 	   $this->colNamesIndex->init(); // holochain esetén beolvas a DHT -ből
 	}
 
@@ -583,19 +617,21 @@ class Db {
 	public function getCollection(string $name): Collection {
 	    $this->errorMsg = '';
 	    $result = new Collection('',[],[],$this->docStorage, $this->keyClassName);
+	    $result->db = $this;
 	    $item = $this->colNamesIndex->find($name);
 	    if ($item->deleted) {
 	        $this->errorMsg = $name.' not_found';
 	    } else {
 	        $collectionRec = $this->docStorage->read($item->key);
-	        $this->errorMsg = $this->docStorage->getErrorMsg();
-	        $result = new Collection($name, 
-	            $collectionRec->indexes,
-	            $collectionRec->indexRoots,
-	            $this->docStorage, 
-	            $this->keyClassName);
-	        $result->id = $item->key;
-	        $result->db = $this;
+	        if (isset($collectionRec->indexes)) {
+    	        $this->errorMsg = $this->docStorage->getErrorMsg();
+    	        $result = new Collection($name, 
+    	            $collectionRec->indexes,
+    	            $collectionRec->indexRoots,
+    	            $this->docStorage, 
+    	            $this->keyClassName);
+    	        $result->id = $item->key;
+	        }
 	    }
 	    return $result;
 	}
@@ -616,13 +652,11 @@ class Db {
             foreach ($collection->indexes as $index) {
                 $collection->dropIndex($index->fieldName, false);
             }
-            // remove collectionRec from docStorage
-            $this->errorMsg = $this->docStorage->getErrorMsg();
-            if ($this->errorMsg == '') {
-                // remove from colName index
-                $item = $this->colNamesIndex->find($collectionRec->colName);
-                $this->colNamesIndex->delete($item);
-            }
+            // remove from colName index
+
+            $item = $this->colNamesIndex->find($collectionRec->colName);
+            $res = $this->colNamesIndex->delete($item);
+            // delete collection rec
             $this->docStorage->remove($collectionRec);
         }
 	    return $result;

@@ -2,11 +2,11 @@
 * DNA app from cat-db
 *  root_btree_item  {key:"btree-root", value:"btreeName", parent:"", leftId:"", rightId:"", deleted:true}
 *         +---link_lrdu---tag='del'
-*         +---link_psw----tag='xxxxx'   target=self   only one 
+*         +---link_psw----tag='xxxxx'   target=self   only one
 *         +---link_lock---tag='dblock' target=self  only one
 *       Entry : Item  {datastr} tartalom szerint: BtreeIte, Collcetion, Document
 *       a root_btree colName alapján collection tipusú item rekordokra mutat
-*  must first call set_psw only one!       
+*  must first call set_psw only one!
 *  publikus funkciok
 *
 *  must edit:         sharing: Sharing::Source,  --> sharing: Sharing::Public
@@ -63,13 +63,13 @@ pub struct Param {
 }
 
 pub fn handle_set_psw(psw: String) -> ZomeApiResult<bool> {
-	let mut result = true;   
+	let mut result = true;
    let root = Item {
-			datastr: "{\"parent\":\"\", \"key\":\"\", \"value\".\"db.colNames\"}".to_string()
+			datastr: "{\"parent\":\"\", \"key\":\"\", \"value\":\"db.colNames\"}".to_string()
    };
    let entry =  Entry::App("item".into(), root.into());
    let address = hdk::entry_address(&entry)?;
-   
+
    // check set psw exists?
    let links = hdk::get_links(&address,
  			                     LinkMatch::Exactly("link_psw"),
@@ -85,13 +85,13 @@ pub fn handle_set_psw(psw: String) -> ZomeApiResult<bool> {
    	hdk::link_entries(&address, &address, "link_lrdu", "D")?;
 		// insert link_psw
    	hdk::link_entries(&address, &address, "link_psw", &psw)?;
-   }	
+   }
    Ok(result)
 }
 
 pub fn handle_add_item(psw: String, pdatastr: String) -> ZomeApiResult<Address> {
 	 let correct_psw = get_correct_psw()?;
-	 if psw == correct_psw {		
+	 if psw == correct_psw {
 	 	let item = Item {
 			datastr: pdatastr
 	 	};
@@ -106,10 +106,10 @@ pub fn handle_add_item(psw: String, pdatastr: String) -> ZomeApiResult<Address> 
 
 pub fn handle_get_item(psw: String, id: String) -> ZomeApiResult<Option<Entry>> {
 	 let correct_psw = get_correct_psw()?;
-	 if psw == correct_psw {		
+	 if psw == correct_psw {
 	 	hdk::get_entry(&id.into())
     } else {
-    	// generate error 
+    	// generate error
       generate_error("incorrect_password".to_string())?;
 	 	hdk::get_entry(&id.into())
     }
@@ -117,7 +117,7 @@ pub fn handle_get_item(psw: String, id: String) -> ZomeApiResult<Option<Entry>> 
 
 pub fn handle_get_lrdu(psw: String, base: String) -> ZomeApiResult<GetLinksResult> {
 	 let correct_psw = get_correct_psw()?;
-	 if psw == correct_psw {		
+	 if psw == correct_psw {
 		let mut get_links_options = GetLinksOptions::default();
    	get_links_options.headers = true;
    	hdk::get_links_with_options(&base.into(),
@@ -125,7 +125,7 @@ pub fn handle_get_lrdu(psw: String, base: String) -> ZomeApiResult<GetLinksResul
 			                  LinkMatch::Any,
 			                  get_links_options)
     } else {
-    	// generate error 
+    	// generate error
       generate_error("incorrect_password".to_string())?;
 		let mut get_links_options = GetLinksOptions::default();
    	get_links_options.headers = true;
@@ -138,11 +138,11 @@ pub fn handle_get_lrdu(psw: String, base: String) -> ZomeApiResult<GetLinksResul
 
 pub fn handle_add_lrdu(psw: String, base: String, target: String, tag: String) -> ZomeApiResult<bool> {
 	 let correct_psw = get_correct_psw()?;
-	 if psw == correct_psw {		
+	 if psw == correct_psw {
 		hdk::link_entries(&base.into(), &target.into(), "link_lrdu", &tag)?;
 		Ok(true)
     } else {
-    	// generate error 
+    	// generate error
       generate_error("incorrect_password".to_string())?;
       Ok(false)
     }
@@ -151,11 +151,11 @@ pub fn handle_add_lrdu(psw: String, base: String, target: String, tag: String) -
 
 pub fn handle_del_lrdu(psw: String, base: String, target: String, tag: String) -> ZomeApiResult<bool> {
 	 let correct_psw = get_correct_psw()?;
-	 if psw == correct_psw {		
+	 if psw == correct_psw {
 		hdk::remove_link(&base.into(), &target.into(), "link_lrdu", &tag)?;
 		Ok(true)
     } else {
-    	// generate error 
+    	// generate error
       generate_error("incorrect_password".to_string())?;
       Ok(false)
     }
@@ -164,7 +164,7 @@ pub fn handle_del_lrdu(psw: String, base: String, target: String, tag: String) -
 
 pub fn handle_get_root(_psw: String) -> ZomeApiResult<Address> {
    let root = Item {
-			datastr: "{\"parent\":\"\", \"key\":\"\", \"value\".\"db.colNames\"}".to_string()
+			datastr: "{\"parent\":\"\", \"key\":\"\", \"value\":\"db.colNames\"}".to_string()
    };
    let entry =  Entry::App("item".into(), root.into());
    let address = hdk::entry_address(&entry)?;
@@ -174,7 +174,7 @@ pub fn handle_get_root(_psw: String) -> ZomeApiResult<Address> {
 fn generate_error(str: String) -> ZomeApiResult<bool> {
 	// calculate root address
    let root = Item {
-			datastr: "{\"parent\":\"\", \"key\":\"\", \"value\".\"db.colNames\"}".to_string()
+			datastr: "{\"parent\":\"\", \"key\":\"\", \"value\":\"db.colNames\"}".to_string()
    };
    let entry =  Entry::App("item".into(), root.into());
    let address = hdk::entry_address(&entry)?;
@@ -186,14 +186,14 @@ fn generate_error(str: String) -> ZomeApiResult<bool> {
 }
 
 fn get_correct_psw() -> ZomeApiResult<String> {
-	
+
 	// calculate root address
    let root = Item {
-			datastr: "{\"parent\":\"\", \"key\":\"\", \"value\".\"db.colNames\"}".to_string()
+			datastr: "{\"parent\":\"\", \"key\":\"\", \"value\":\"db.colNames\"}".to_string()
    };
    let entry =  Entry::App("item".into(), root.into());
    let address = hdk::entry_address(&entry)?;
-   
+
    // get from link_psw
 	let mut get_links_options = GetLinksOptions::default();
    get_links_options.headers = true;
@@ -202,11 +202,11 @@ fn get_correct_psw() -> ZomeApiResult<String> {
 			                  LinkMatch::Any,
 			                  get_links_options)?;
    if links.tags().len() > 0 {
-		Ok(links.tags()[0].clone())   
+		Ok(links.tags()[0].clone())
    } else {
       generate_error("error_in_get_correct_psw".to_string())?;
 		Ok("nmnjkdfjuztr".to_string())
-   }			   
+   }
 }
 
 fn definition() -> ValidatingEntryType {
@@ -252,7 +252,7 @@ fn definition() -> ValidatingEntryType {
 					  			Ok(())
 						 }
 				    )
-				]    
+				]
     )
 }
 
@@ -273,8 +273,8 @@ define_zome! {
         get_root: {
 				inputs: |psw: String|,
 				outputs: |result: ZomeApiResult<Address>|,
-				handler: handle_get_root        
-        } 
+				handler: handle_get_root
+        }
         add_item: {
             inputs: |psw: String, pdatastr: String|,
             outputs: |result: ZomeApiResult<Address>|,
@@ -288,18 +288,18 @@ define_zome! {
         get_lrdu: {
 				inputs: |psw: String, base: String|,
 				outputs: |result: ZomeApiResult<GetLinksResult>|,
-				handler: handle_get_lrdu        
-        } 
+				handler: handle_get_lrdu
+        }
         add_lrdu: {
 				inputs: |psw: String, base: String, target: String, tag: String|,
 				outputs: |result: ZomeApiResult<bool>|,
-				handler: handle_add_lrdu        
-        } 
+				handler: handle_add_lrdu
+        }
         del_lrdu: {
 				inputs: |psw: String, base: String, target: String, tag: String|,
 				outputs: |result: ZomeApiResult<bool>|,
-				handler: handle_del_lrdu        
-        } 
+				handler: handle_del_lrdu
+        }
     ]
 
     traits: {

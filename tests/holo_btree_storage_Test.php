@@ -12,7 +12,7 @@ define('HOLOURL','http://127.0.0.1:8888');
 define('HOLOINSTANCE','test-instance');
 
 // test Cases
-class CatdbTest extends TestCase {
+class HoloBtreeTest extends TestCase {
     
     public function test_start() {
         global $storage, $rootAddress;
