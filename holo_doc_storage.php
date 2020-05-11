@@ -3,7 +3,7 @@
 /**
 * Document storage in holochain DHT
 *
-* requested constants: HOLOPSW, HOLOURL, HOLOINSTANCE
+* requested constants: HOLOPSW, HOLOURL, HOLOINSTANCE, HOLOFULLCHAIN
 *
 * logical DHT-structure:
 * ----------------------
@@ -48,6 +48,10 @@
 * collection {name, indexNames, indexRoots}  
 * document   {colName, data} 
 */
+
+if (!defined('HOLOFULLCHAIN')) {
+    define('HOLOFULLCHAIN',false);
+}
 class HoloDocStorage extends DocStorage {
 	public $rootId = '';
 	private $errorMsg = '';
@@ -115,7 +119,7 @@ class HoloDocStorage extends DocStorage {
 		$result = new Document();
 		$res = $this->dna_call('get_item', ["id" => $id]);
 		if (isset($res->Ok)) {
-		    $encrypted = JSON_decode($res->Ok->App[1])->datastr;
+		  $encrypted = JSON_decode($res->Ok->App[1])->datastr;
 		  if (substr($encrypted,0,1) != '{') {
 		      // nem értem miért:
 		      $encrypted = str_replace(' ','+',$encrypted);
@@ -134,8 +138,14 @@ class HoloDocStorage extends DocStorage {
 	          $links = $res->Ok->links;
 	          foreach ($links as $link)  {
 	              if ($link->tag == 'D') {
-                        $result = new Document();
-                        $this->errorMsg = 'not_found';
+	                    if (isset($result->previos)) {
+	                       $previos = $result->previos;
+	                       $result = new Document();
+	                       $result->previos = $previos;
+	                    } else {
+	                        $result = new Document();
+	                    }
+                        $this->errorMsg = 'deleted';
 	              }
 	              if ($link->tag == 'U') {
 	                  $result = $this->read($link->address);
@@ -160,14 +170,28 @@ class HoloDocStorage extends DocStorage {
 	*/
 	public function add(Document $item): string {
 	    $this->errorMsg = '';
-	    // Item kialakitása
-	    $dhtItem = new stdClass();
-		foreach ($item as $fn => $fv) {
-		    $dhtItem->$fn = $fv;
-		}
-		$s = JSON_encode($dhtItem);
-		$encryption_iv = '1201586891011121';
-		$encrypted = openssl_encrypt($s, "AES-128-CTR", HOLOPSW, 0, $encryption_iv);
+	    if (HOLOFULLCHAIN) {
+    	    // read exists last id, and delete exists link_lrdu tag='last' item
+    	    $lastId = '';
+    	    $res1 = $this->dna_call('get_lrdu',["base" => $this->rootId]);
+    	    if (isset($res1->Ok)) {
+    	        $links = $res1->Ok->links;
+    	        foreach ($links as $link) {
+    	            if ($link->tag = 'last') {
+    	                $lastId = $link->address;
+    	                $res2 = $this->dna_call('del_lrdu',
+    	                    ["base" => $this->rootId, "target" => $link->address, "tag" => $link->tag]);
+    	            }
+    	        }
+    	    }
+            $item->previos = $lastId;
+	    }
+	    
+	    // item encrypt
+	    $s = JSON_encode($item);
+	    $encryption_iv = '1201586891011121';
+	    $encrypted = openssl_encrypt($s, "AES-128-CTR", HOLOPSW, 0, $encryption_iv);
+		
 		// item kitárolása 
 		$res = $this->dna_call('add_item',["pdatastr" => $encrypted]); 
 		if (isset($res->Ok)) {
@@ -308,6 +332,52 @@ class HoloDocStorage extends DocStorage {
 	    // not implemented
 	    $this->errorMsg = '';
 	}
+	
+	/**
+	 * get first item by fullChain
+	 * @return Socument
+	 */
+	public function first(): Socument {
+	    $this->errorMsg = '';
+	    $this->result = new Document();
+	    if (HOLOFULLCHAIN == false) {
+	        $this->errorMsg = 'not_full_chain';
+	    } else {
+    	    $lastId = '';
+    	    $res1 = $this->dna_call('get_lrdu',["base" => $this->rootId]);
+    	    if (isset($res1->Ok)) {
+    	        $links = $res1->Ok->links;
+    	        foreach ($links as $link) {
+    	            if ($link->tag = 'last') {
+    	                $lastId = $link->address;
+    	            }
+    	        }
+    	    }
+    	    $result = $this->read($lastId);
+	    }
+	    return $this->result;
+	}
+	
+	/**
+	 * get next item by full chain
+	 * @param Document $item
+	 * @return Document
+	 */
+	public function next(Document $item): Document {
+	    $result = new Document;
+	    $this->errormsg = '';
+	    if (!HOLOFULLCHAIN) {
+	        $this->errorMsg = 'not_full_chain';
+	    } else {
+    	    if ($item->previos != '') {
+    	        $result = get($item->parent);
+    	    } else {
+    	        $this->errorMsg = 'eof';
+    	    }
+	    }
+	    return $result;
+	}
+	
 
 }
 ?>

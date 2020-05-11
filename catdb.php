@@ -532,20 +532,25 @@ class Db {
 
 	/**
 	 * constructor
-	 * @param string $colNamesRoot
+	 * @param string $docStoragename  optional
+	 * @param string $keyClassname optional
 	 */
-	function __construct(string $colNamesRoot = '0') {
-	    if (defined('DOC_STORAGE_NEME')) {
-	        $docStorageName = DOC_STORAGE_NEME;
-	    } else {
-	        $docStorageName = 'JsonDocStorage';
+	function __construct($docStorageName = '',  $keyClassName = '') {
+	    if ($docStorageName == '') {
+    	    if (defined('DOC_STORAGE_NEME')) {
+    	        $docStorageName = DOC_STORAGE_NEME;
+    	    } else {
+    	        $docStorageName = 'JsonDocStorage';
+    	    }
 	    }
-	    if (defined('KEY_CLASS_NEME')) {
-	        $this->keyClassName = KEY_CLASS_NAME;
-	    } else {
-	        $this->keyClassName = 'Btree';
+	    if ($keyClassName == '') {
+    	    if (defined('KEY_CLASS_NEME')) {
+    	        $this->keyClassName = KEY_CLASS_NAME;
+    	    } else {
+    	        $this->keyClassName = 'Btree';
+    	    }
 	    }
-	    $keyClassName = $this->keyClassName;
+	   $keyClassName = $this->keyClassName;
 	   $this->docStorage = new $docStorageName ();
 	   $this->errorMsg = '';
 	   $this->colNamesIndex = new $keyClassName ('db','colNames');

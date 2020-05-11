@@ -6,27 +6,12 @@
             "field2"
         ],
         "indexRoots": [
-            null,
-            null,
-            null
+            "0",
+            "0",
+            "0"
         ],
         "id": "0",
         "ty": "del",
-        "colName": "col1"
-    },
-    {
-        "indexes": [
-            "id",
-            "field1",
-            "field2"
-        ],
-        "indexRoots": [
-            null,
-            null,
-            null
-        ],
-        "id": "1",
-        "ty": "col",
         "colName": "col1"
     },
     {
@@ -36,11 +21,11 @@
             "f2"
         ],
         "indexRoots": [
-            null,
-            null,
-            null
+            "0",
+            "0",
+            "0"
         ],
-        "id": "2",
+        "id": "1",
         "ty": "del",
         "colName": "col2"
     },
@@ -51,11 +36,11 @@
             "f2"
         ],
         "indexRoots": [
-            null,
-            null,
-            null
+            "0",
+            "0",
+            "0"
         ],
-        "id": "3",
+        "id": "2",
         "ty": "del",
         "colName": "col3"
     },
@@ -66,16 +51,16 @@
             "f2"
         ],
         "indexRoots": [
-            null,
-            null,
-            null
+            "0",
+            "0",
+            "0"
         ],
-        "id": "4",
+        "id": "3",
         "ty": "del",
         "colName": "col3"
     },
     {
-        "id": "5",
+        "id": "4",
         "ty": "doc",
         "colName": "col1",
         "field1": "01",
@@ -83,7 +68,7 @@
         "field3": "03"
     },
     {
-        "id": "6",
+        "id": "5",
         "ty": "doc",
         "colName": "col1",
         "field1": "11",
@@ -91,7 +76,7 @@
         "field3": "13"
     },
     {
-        "id": "7",
+        "id": "6",
         "ty": "doc",
         "colName": "col1",
         "field1": "21",
@@ -99,7 +84,7 @@
         "field3": "23"
     },
     {
-        "id": "8",
+        "id": "7",
         "ty": "doc",
         "colName": "col1",
         "field1": "31",

@@ -35,7 +35,52 @@ see: https://github.com/utopszkij/holo_nosql/blob/master/doc/readme.md
 - read documents set from one collection by indexed field, use pagination and ASC/DESC ordering,
 - get documents'count in one collection where one indexed field exists,
 - create index, drop index into existing collections and documents,
-- store data in DHT in encrypted by AES-128-CTR.
+
+
+- store in holochain DHT: "btreeItem", "collection info", "document" 
+- "document" and "collection info" is encrypted by AES-128-CTR method.
+
+## Use Example
+```
+<?php
+define('DOC_STORAGE_NEME','HoloDocStorage');
+define('KEY_STORAGE_NAME','HoloBtreeStorage');
+define('KEY_CLASS_NAME','Btree');
+define('HOLOPSW','123456');
+define('HOLOURL','http://127.0.0.1:8888');
+define('HOLOFULLCHAIN',true);  // create or not chain from all document
+define('HOLOINSTANCE','test-instance');
+
+include_once './btree.php';
+include_once './catdb.php';
+include_once './holo_btree_storage.php';
+include_once './holo_doc_storage.php';
+
+// create database object
+$db = new Db();
+
+// create new collection into DHT
+$col1 = $db->createCollection('colName1',['id','field1','field2']);
+
+// create new document into DHT
+$doc = new Document();
+$doc->ty = 'doc';
+$doc->field1 = '01';
+$doc->field2 = '02';
+$doc->field3 = '03';
+$docId1 = $col1->addDocument($doc);
+
+// read documents from DHT
+$docs = $col1->findDocuments('field1','01');
+foreach ($docs as $doc) {
+	echo JSON_encode($doc)."\n";
+}
+
+// drop collection
+$db->dropCollection($col1->id);
+
+?>
+```
 
 ## Overview
 
@@ -48,24 +93,44 @@ see: https://github.com/utopszkij/holo_nosql/blob/master/doc/readme.md
 GNU/GPL
 
 ## Author
+
 Tibor Fogler (utopszkij)
 tibor.fogler@gmail.com
+https://github.com/utopszkij
+
 
 ## Classes and methods:
+
+### CollectionRec
+- id
+- ty = 'col'
+- colName
+- previos   only if HOLOFULLCHAIN == true
+- indexFields
+- indexRoots
+
+### Document
+- id 
+- ty = 'doc'
+- colName
+- previos   only if HOLOFULLCHAIN == true
+- filed1, field2 ,....
+
+
 ### Db
--       public function createCollection($name, $indexes): Collection  !!! 
--       public function dropCollection($name): bool
--       public function getCollection($name): Collection
+-       public function createCollection(string $name, array $indexes): Collection   
+-       public function dropCollection(string $name): bool
+-       public function getCollection(string $name): Collection
 -       public function getErrorMsg(): string
 ###  Collection
--       public function addDocument($document): string
--       public function updateDocument($oldDocument, $newDocument): string
--       public function removeDocument($document): bool
--       public function readDouments($fieldName, $order, $offset, $limit): array
--       public function findDouments($fieldName, $value, $order, éoffset, $limit): array
--       public function count($fieldName, $value): int
--       public function createIndex($fieldName): bool
--       public function dropIndex($fieldName): bool
+-       public function addDocument(Document $document): string
+-       public function updateDocument(Document $oldDocument, Document $newDocument): string
+-       public function removeDocument(Document $document): bool
+-       public function readDouments(string $fieldName, string $order, int $offset, int $limit): array ($oreder is 'ASC' or "DESC")
+-       public function findDouments(string $fieldName, string $value, string $order, int $offset, int $limit): array ($oreder is 'ASC' or "DESC")
+-       public function count(string $fieldName, string $value): int (		$value is filter fieldName'value or "Any")
+-       public function createIndex(string $fieldName): bool
+-       public function dropIndex(string $fieldName): bool
 -       public function getErrorMsg(): string
  
   if defined DOC_STORAGE_NAME use it else use included JsonDocStorage

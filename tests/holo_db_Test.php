@@ -268,7 +268,7 @@ class HoloDbTest extends TestCase {
         $this->assertEquals('', $db->getErrorMsg());
         
         $db->dropCollection($col3->id);
-        $this->assertEquals('not_found', $db->getErrorMsg());
+        $this->assertEquals('deleted', $db->getErrorMsg());
     }
     
  

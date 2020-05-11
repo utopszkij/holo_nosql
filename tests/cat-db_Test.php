@@ -12,7 +12,7 @@ class CatdbTest extends TestCase {
     
     public function test_start() {
 		global $docStorage, $db, $col1, $col2, $docid1; $docid2;
-		$db = new Db($docStorage);
+		$db = new Db();
       $this->AssertEquals('',$db->getErrorMsg());
     } 
    
