@@ -76,7 +76,7 @@ foreach ($docs as $doc) {
 	echo JSON_encode($doc)."\n";
 }
 
-// drop collection
+// drop collection and delete documents of collection
 $db->dropCollection($col1->id);
 
 ?>
@@ -128,7 +128,7 @@ https://github.com/utopszkij
 -       public function removeDocument(Document $document): bool
 -       public function readDouments(string $fieldName, string $order, int $offset, int $limit): array ($oreder is 'ASC' or "DESC")
 -       public function findDouments(string $fieldName, string $value, string $order, int $offset, int $limit): array ($oreder is 'ASC' or "DESC")
--       public function count(string $fieldName, string $value): int (		$value is filter fieldName'value or "Any")
+-       public function count(string $fieldName, string $value): int ($value is filter fieldName'value or "Any")
 -       public function createIndex(string $fieldName): bool
 -       public function dropIndex(string $fieldName): bool
 -       public function getErrorMsg(): string
@@ -138,4 +138,8 @@ https://github.com/utopszkij
   if defined KEY_STORAGE_NAME use it else use JsonKeyStorage (inluded in Btree.php)
  
   if defined KEY_CLASS_NAME use it else use Btree
+  
+  ** if defined HOLOFULLCHAIN constant and it is true ** then creates a chain that contains all document and collection data. This allows data to be retrieved from DHT even if the Btree indexes are damaged or the corrupted btree indexes can be rebuilt (db-> docStorage-> first and db-> docStorage-> next functions) If this option is enabled switching on slows down the system.
+  
+  
  
